@@ -56,19 +56,19 @@ The attendant handles:
 
 ```text
 Vehicle Entry
-      ↓
+↓
 Vehicle Details
-      ↓
+↓
 Parking Slot Assignment
-      ↓
+↓
 Parking Pass Generated
-      ↓
+↓
 Vehicle Parks
-      ↓
+↓
 Vehicle Exit
-      ↓
+↓
 Payment / Extra Charge
-      ↓
+↓
 Slot Released
 ```
 
@@ -97,7 +97,7 @@ When someone arrives:
 
 ```text
 Customer
-   ↓
+↓
 Parking Attendant
 ```
 
@@ -259,17 +259,17 @@ For example:
 
 ```text
 Every 30 seconds
-      ↓
+↓
 Check active parking
-      ↓
+↓
 Compare current time
-      ↓
+↓
 Is allowed time exceeded?
-      ↓
+↓
 YES
-      ↓
+↓
 Mark OVERDUE
-      ↓
+↓
 Generate notification
 ```
 
@@ -288,13 +288,13 @@ Notifications
 ────────────────────────────
 
 🔴 Vehicle AP39AB1234 exceeded
-   parking time by 25 minutes.
+parking time by 25 minutes.
 
 🔴 Vehicle TS09XY4521 exceeded
-   parking time by 10 minutes.
+parking time by 10 minutes.
 
 🟢 Vehicle AP40CD1020 exited.
-   Slot B-012 is now available.
+Slot B-012 is now available.
 ```
 
 We could use **WebSockets** so the notification appears immediately.
@@ -480,34 +480,34 @@ That's completely acceptable for this project.
 # 15. Overall architecture
 
 ```text
-                    PARKING SYSTEM
-                          │
-             ┌────────────┴────────────┐
-             │                         │
-           OWNER                  ATTENDANT
-             │                         │
-             │                    Vehicle Entry
-             │                         │
-             │                    Slot Assignment
-             │                         │
-             │                    Parking Pass
-             │                         │
-             └────────────┬────────────┘
-                          │
-                     BACKEND
-                          │
-          ┌───────────────┼────────────────┐
-          │               │                │
-     Slot Manager    Parking Engine   Notification
-                          │
-                          │
-                    Time Checker
-                          │
-                          ▼
-                       OVERDUE
-                          │
-                          ▼
-                    Extra Charge
+                  PARKING SYSTEM
+                        │
+            ┌────────────┴────────────┐
+            │                         │
+      OWNER                  ATTENDANT
+            │                         │
+            │                    Vehicle Entry
+            │                         │
+            │                    Slot Assignment
+            │                         │
+            │                    Parking Pass
+            │                         │
+            └────────────┬────────────┘
+                        │
+                  BACKEND
+                        │
+      ┌───────────────┼────────────────┐
+      │               │                │
+Slot Manager    Parking Engine   Notification
+                        │
+                        │
+                  Time Checker
+                        │
+                        ▼
+                  OVERDUE
+                        │
+                        ▼
+                  Extra Charge
 ```
 
 ### The final scope I'd recommend
