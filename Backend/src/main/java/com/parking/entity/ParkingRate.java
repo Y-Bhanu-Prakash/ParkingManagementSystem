@@ -1,13 +1,19 @@
 package com.parking.entity;
 
+import java.time.LocalDateTime;
+
 public class ParkingRate {
 
     private Long id;
     private VehicleType vehicleType;
+
     private int baseDurationMinutes;
     private double baseAmount;
+
     private int extraUnitMinutes;
     private double extraAmount;
+
+    private LocalDateTime effectiveFrom;
 
     public ParkingRate() {
     }
@@ -26,6 +32,25 @@ public class ParkingRate {
         this.baseAmount = baseAmount;
         this.extraUnitMinutes = extraUnitMinutes;
         this.extraAmount = extraAmount;
+        this.effectiveFrom = LocalDateTime.now();
+    }
+
+    public ParkingRate(
+            Long id,
+            VehicleType vehicleType,
+            int baseDurationMinutes,
+            double baseAmount,
+            int extraUnitMinutes,
+            double extraAmount,
+            LocalDateTime effectiveFrom
+    ) {
+        this.id = id;
+        this.vehicleType = vehicleType;
+        this.baseDurationMinutes = baseDurationMinutes;
+        this.baseAmount = baseAmount;
+        this.extraUnitMinutes = extraUnitMinutes;
+        this.extraAmount = extraAmount;
+        this.effectiveFrom = effectiveFrom;
     }
 
     public Long getId() {
@@ -74,5 +99,13 @@ public class ParkingRate {
 
     public void setExtraAmount(double extraAmount) {
         this.extraAmount = extraAmount;
+    }
+
+    public LocalDateTime getEffectiveFrom() {
+        return effectiveFrom;
+    }
+
+    public void setEffectiveFrom(LocalDateTime effectiveFrom) {
+        this.effectiveFrom = effectiveFrom;
     }
 }
