@@ -8,19 +8,29 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class InMemoryDataStore {
 
-    private final Map<Long, Object> users = new ConcurrentHashMap<>();
+    private final Map<Long, Object> users =
+            new ConcurrentHashMap<>();
 
-    private final Map<Long, Object> parkingSlots = new ConcurrentHashMap<>();
+    private final Map<Long, Object> parkingSlots =
+            new ConcurrentHashMap<>();
 
-    private final Map<Long, Object> parkingSessions = new ConcurrentHashMap<>();
+    private final Map<Long, Object> parkingRates =
+            new ConcurrentHashMap<>();
 
-    private final Map<Long, Object> parkingPasses = new ConcurrentHashMap<>();
+    private final Map<Long, Object> parkingSessions =
+            new ConcurrentHashMap<>();
 
-    private final Map<Long, Object> payments = new ConcurrentHashMap<>();
+    private final Map<Long, Object> parkingPasses =
+            new ConcurrentHashMap<>();
 
-    private final Map<Long, Object> notifications = new ConcurrentHashMap<>();
+    private final Map<Long, Object> payments =
+            new ConcurrentHashMap<>();
 
-    private final Map<Long, Object> parkingHistory = new ConcurrentHashMap<>();
+    private final Map<Long, Object> notifications =
+            new ConcurrentHashMap<>();
+
+    private final Map<Long, Object> parkingHistory =
+            new ConcurrentHashMap<>();
 
     public Map<Long, Object> getUsers() {
         return users;
@@ -28,6 +38,10 @@ public class InMemoryDataStore {
 
     public Map<Long, Object> getParkingSlots() {
         return parkingSlots;
+    }
+
+    public Map<Long, Object> getParkingRates() {
+        return parkingRates;
     }
 
     public Map<Long, Object> getParkingSessions() {
