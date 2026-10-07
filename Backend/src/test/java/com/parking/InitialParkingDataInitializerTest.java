@@ -38,7 +38,7 @@ public class InitialParkingDataInitializerTest {
                 slots.values().stream()
                         .filter(ParkingSlot.class::isInstance)
                         .map(ParkingSlot.class::cast)
-                        .filter(slot -> slot.getVehicleType() == VehicleType.CAR)
+                        .filter(slot -> slot.getSlotType() == VehicleType.CAR)
                         .count()
         );
 
@@ -47,7 +47,7 @@ public class InitialParkingDataInitializerTest {
                 slots.values().stream()
                         .filter(ParkingSlot.class::isInstance)
                         .map(ParkingSlot.class::cast)
-                        .filter(slot -> slot.getVehicleType() == VehicleType.BIKE)
+                        .filter(slot -> slot.getSlotType() == VehicleType.BIKE)
                         .count()
         );
 
@@ -56,7 +56,7 @@ public class InitialParkingDataInitializerTest {
                 slots.values().stream()
                         .filter(ParkingSlot.class::isInstance)
                         .map(ParkingSlot.class::cast)
-                        .filter(slot -> slot.getVehicleType() == VehicleType.SUV)
+                        .filter(slot -> slot.getSlotType() == VehicleType.SUV)
                         .count()
         );
 
@@ -65,7 +65,7 @@ public class InitialParkingDataInitializerTest {
                 slots.values().stream()
                         .filter(ParkingSlot.class::isInstance)
                         .map(ParkingSlot.class::cast)
-                        .filter(slot -> slot.getVehicleType() == VehicleType.TRUCK)
+                        .filter(slot -> slot.getSlotType() == VehicleType.TRUCK)
                         .count()
         );
     }

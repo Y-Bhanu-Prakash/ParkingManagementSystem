@@ -1,5 +1,7 @@
 package com.parking.entity;
 
+import java.time.LocalDateTime;
+
 public class ParkingSlot {
 
     public enum Status {
@@ -11,23 +13,29 @@ public class ParkingSlot {
     }
 
     private Long id;
-    private String slotNumber;
-    private VehicleType vehicleType;
+    private String slotCode;
+    private VehicleType slotType;
     private Status status;
+    private boolean active;
+    private LocalDateTime createdAt;
 
     public ParkingSlot() {
     }
 
     public ParkingSlot(
             Long id,
-            String slotNumber,
-            VehicleType vehicleType,
-            Status status
+            String slotCode,
+            VehicleType slotType,
+            Status status,
+            boolean active,
+            LocalDateTime createdAt
     ) {
         this.id = id;
-        this.slotNumber = slotNumber;
-        this.vehicleType = vehicleType;
+        this.slotCode = slotCode;
+        this.slotType = slotType;
         this.status = status;
+        this.active = active;
+        this.createdAt = createdAt;
     }
 
     public Long getId() {
@@ -38,20 +46,20 @@ public class ParkingSlot {
         this.id = id;
     }
 
-    public String getSlotNumber() {
-        return slotNumber;
+    public String getSlotCode() {
+        return slotCode;
     }
 
-    public void setSlotNumber(String slotNumber) {
-        this.slotNumber = slotNumber;
+    public void setSlotCode(String slotCode) {
+        this.slotCode = slotCode;
     }
 
-    public VehicleType getVehicleType() {
-        return vehicleType;
+    public VehicleType getSlotType() {
+        return slotType;
     }
 
-    public void setVehicleType(VehicleType vehicleType) {
-        this.vehicleType = vehicleType;
+    public void setSlotType(VehicleType slotType) {
+        this.slotType = slotType;
     }
 
     public Status getStatus() {
@@ -60,5 +68,21 @@ public class ParkingSlot {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

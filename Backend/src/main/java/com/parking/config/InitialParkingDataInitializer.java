@@ -7,6 +7,8 @@ import com.parking.repository.InMemoryDataStore;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 public class InitialParkingDataInitializer implements CommandLineRunner {
 
@@ -18,13 +20,11 @@ public class InitialParkingDataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-
         initializeParkingSlots();
         initializeParkingRates();
     }
 
     private void initializeParkingSlots() {
-
         if (!dataStore.getParkingSlots().isEmpty()) {
             return;
         }
@@ -48,15 +48,16 @@ public class InitialParkingDataInitializer implements CommandLineRunner {
 
     private long addSlot(
             long id,
-            String slotNumber,
+            String slotCode,
             VehicleType vehicleType
     ) {
-
         ParkingSlot slot = new ParkingSlot(
                 id,
-                slotNumber,
+                slotCode,
                 vehicleType,
-                ParkingSlot.Status.AVAILABLE
+                ParkingSlot.Status.AVAILABLE,
+                true,
+                LocalDateTime.now()
         );
 
         dataStore.getParkingSlots().put(id, slot);
@@ -65,57 +66,17 @@ public class InitialParkingDataInitializer implements CommandLineRunner {
     }
 
     private void initializeParkingRates() {
-
         if (!dataStore.getParkingRates().isEmpty()) {
             return;
         }
 
         long id = 1L;
 
-        addRate(
-                id++,
-                VehicleType.CAR,
-                120,
-                60.0,
-                60,
-                30.0
-        );
-
-        addRate(
-                id++,
-                VehicleType.BIKE,
-                120,
-                30.0,
-                60,
-                10.0
-        );
-
-        addRate(
-                id++,
-                VehicleType.SUV,
-                120,
-                80.0,
-                60,
-                40.0
-        );
-
-        addRate(
-                id++,
-                VehicleType.TRUCK,
-                120,
-                100.0,
-                60,
-                50.0
-        );
-
-        addRate(
-                id,
-                VehicleType.OTHER,
-                120,
-                50.0,
-                60,
-                25.0
-        );
+        addRate(id++, VehicleType.CAR, 120, 60.0, 60, 30.0);
+        addRate(id++, VehicleType.BIKE, 120, 30.0, 60, 10.0);
+        addRate(id++, VehicleType.SUV, 120, 80.0, 60, 40.0);
+        addRate(id++, VehicleType.TRUCK, 120, 100.0, 60, 50.0);
+        addRate(id, VehicleType.OTHER, 120, 50.0, 60, 25.0);
     }
 
     private void addRate(
@@ -126,7 +87,6 @@ public class InitialParkingDataInitializer implements CommandLineRunner {
             int extraUnitMinutes,
             double extraAmount
     ) {
-
         ParkingRate rate = new ParkingRate(
                 id,
                 vehicleType,
