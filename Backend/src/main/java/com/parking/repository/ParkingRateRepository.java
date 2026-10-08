@@ -16,12 +16,41 @@ public class ParkingRateRepository {
         this.dataStore = dataStore;
     }
 
+    /**
+     * Add or store a parking rate in memory.
+     *
+     * Only one active rate is allowed for each vehicle type.
+     */
     public ParkingRate save(ParkingRate rate) {
-        dataStore.getParkingRates().put(rate.getId(), rate);
+
+        if (rate.isActive()) {
+
+            Optional<ParkingRate> existingRate =
+                    findByVehicleType(rate.getVehicleType());
+
+            if (existingRate.isPresent()
+                    && !existingRate.get().getId().equals(rate.getId())) {
+
+                throw new IllegalArgumentException(
+                        "An active rate already exists for vehicle type: "
+                                + rate.getVehicleType()
+                );
+            }
+        }
+
+        dataStore.getParkingRates().put(
+                rate.getId(),
+                rate
+        );
+
         return rate;
     }
 
+    /**
+     * Find a parking rate by its ID.
+     */
     public Optional<ParkingRate> findById(Long id) {
+
         Object rate = dataStore.getParkingRates().get(id);
 
         if (rate instanceof ParkingRate) {
@@ -31,7 +60,27 @@ public class ParkingRateRepository {
         return Optional.empty();
     }
 
+    /**
+     * Find the active parking rate for a vehicle type.
+     */
+    public Optional<ParkingRate> findByVehicleType(
+            VehicleType vehicleType
+    ) {
+
+        return findAll()
+                .stream()
+                .filter(ParkingRate::isActive)
+                .filter(rate ->
+                        rate.getVehicleType() == vehicleType
+                )
+                .findFirst();
+    }
+
+    /**
+     * List all parking rates.
+     */
     public List<ParkingRate> findAll() {
+
         return dataStore.getParkingRates()
                 .values()
                 .stream()
@@ -40,19 +89,44 @@ public class ParkingRateRepository {
                 .toList();
     }
 
-    public Optional<ParkingRate> findByVehicleType(VehicleType vehicleType) {
-        return findAll()
-                .stream()
-                .filter(rate -> rate.getVehicleType() == vehicleType)
-                .findFirst();
-    }
-
-    public boolean existsByVehicleType(VehicleType vehicleType) {
-        return findByVehicleType(vehicleType).isPresent();
-    }
-
+    /**
+     * Update an existing parking rate.
+     *
+     * Only one active rate is allowed for each vehicle type.
+     */
     public ParkingRate update(ParkingRate rate) {
-        dataStore.getParkingRates().put(rate.getId(), rate);
+
+        if (rate.isActive()) {
+
+            Optional<ParkingRate> existingRate =
+                    findByVehicleType(rate.getVehicleType());
+
+            if (existingRate.isPresent()
+                    && !existingRate.get().getId().equals(rate.getId())) {
+
+                throw new IllegalArgumentException(
+                        "An active rate already exists for vehicle type: "
+                                + rate.getVehicleType()
+                );
+            }
+        }
+
+        dataStore.getParkingRates().put(
+                rate.getId(),
+                rate
+        );
+
         return rate;
+    }
+
+    /**
+     * Check whether an active rate already exists
+     * for the specified vehicle type.
+     */
+    public boolean existsActiveByVehicleType(
+            VehicleType vehicleType
+    ) {
+
+        return findByVehicleType(vehicleType).isPresent();
     }
 }

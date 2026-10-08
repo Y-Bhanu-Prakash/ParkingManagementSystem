@@ -11,8 +11,9 @@ public class ParkingRate {
     private double baseAmount;
 
     private int extraUnitMinutes;
-    private double extraAmount;
+    private double extraUnitAmount;
 
+    private boolean active;
     private LocalDateTime effectiveFrom;
 
     public ParkingRate() {
@@ -24,24 +25,8 @@ public class ParkingRate {
             int baseDurationMinutes,
             double baseAmount,
             int extraUnitMinutes,
-            double extraAmount
-    ) {
-        this.id = id;
-        this.vehicleType = vehicleType;
-        this.baseDurationMinutes = baseDurationMinutes;
-        this.baseAmount = baseAmount;
-        this.extraUnitMinutes = extraUnitMinutes;
-        this.extraAmount = extraAmount;
-        this.effectiveFrom = LocalDateTime.now();
-    }
-
-    public ParkingRate(
-            Long id,
-            VehicleType vehicleType,
-            int baseDurationMinutes,
-            double baseAmount,
-            int extraUnitMinutes,
-            double extraAmount,
+            double extraUnitAmount,
+            boolean active,
             LocalDateTime effectiveFrom
     ) {
         this.id = id;
@@ -49,7 +34,8 @@ public class ParkingRate {
         this.baseDurationMinutes = baseDurationMinutes;
         this.baseAmount = baseAmount;
         this.extraUnitMinutes = extraUnitMinutes;
-        this.extraAmount = extraAmount;
+        this.extraUnitAmount = extraUnitAmount;
+        this.active = active;
         this.effectiveFrom = effectiveFrom;
     }
 
@@ -93,12 +79,20 @@ public class ParkingRate {
         this.extraUnitMinutes = extraUnitMinutes;
     }
 
-    public double getExtraAmount() {
-        return extraAmount;
+    public double getExtraUnitAmount() {
+        return extraUnitAmount;
     }
 
-    public void setExtraAmount(double extraAmount) {
-        this.extraAmount = extraAmount;
+    public void setExtraUnitAmount(double extraUnitAmount) {
+        this.extraUnitAmount = extraUnitAmount;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public LocalDateTime getEffectiveFrom() {
