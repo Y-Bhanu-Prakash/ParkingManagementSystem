@@ -19,28 +19,28 @@ public class ParkingSlotServiceImpl implements ParkingSlotService {
     @Override
     public ParkingSlot createSlot(ParkingSlot slot) {
 
-        // Slot code is required
         if (slot.getSlotCode() == null || slot.getSlotCode().trim().isEmpty()) {
             throw new IllegalArgumentException("Slot code is required");
         }
 
-        // Slot type is required
         if (slot.getSlotType() == null) {
             throw new IllegalArgumentException("Slot type is required");
         }
 
-        // Slot code must be unique
         if (parkingSlotRepository.existsBySlotCode(slot.getSlotCode())) {
             throw new IllegalArgumentException("Slot code already exists");
         }
 
-        // New slots start as AVAILABLE
+        // Generate ID for the new slot
+        Long nextId = parkingSlotRepository.findAll()
+                .stream()
+                .map(ParkingSlot::getId)
+                .max(Long::compareTo)
+                .orElse(0L) + 1;
+
+        slot.setId(nextId);
         slot.setStatus(ParkingSlot.Status.AVAILABLE);
-
-        // New slots are active
         slot.setActive(true);
-
-        // Set creation time
         slot.setCreatedAt(LocalDateTime.now());
 
         return parkingSlotRepository.save(slot);
@@ -55,7 +55,8 @@ public class ParkingSlotServiceImpl implements ParkingSlotService {
     public ParkingSlot getSlotById(Long id) {
         return parkingSlotRepository.findById(id)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Parking slot not found with ID: " + id));
+                        new IllegalArgumentException(
+                                "Parking slot not found with ID: " + id));
     }
 
     @Override
@@ -71,9 +72,9 @@ public class ParkingSlotServiceImpl implements ParkingSlotService {
             throw new IllegalArgumentException("Slot type is required");
         }
 
-        // Check whether another slot already uses this code
         ParkingSlot slotWithSameCode =
-                parkingSlotRepository.findBySlotCode(slot.getSlotCode()).orElse(null);
+                parkingSlotRepository.findBySlotCode(slot.getSlotCode())
+                        .orElse(null);
 
         if (slotWithSameCode != null
                 && !slotWithSameCode.getId().equals(id)) {
@@ -95,14 +96,13 @@ public class ParkingSlotServiceImpl implements ParkingSlotService {
             throw new IllegalArgumentException("Status is required");
         }
 
-        // Cannot change an occupied slot to maintenance
         if (status == ParkingSlot.Status.MAINTENANCE
                 && slot.getStatus() == ParkingSlot.Status.OCCUPIED) {
+
             throw new IllegalStateException(
                     "Cannot change slot to MAINTENANCE while it has an active parking session");
         }
 
-        // Do not allow invalid status changes
         if (slot.getStatus() == status) {
             throw new IllegalStateException(
                     "Slot is already in " + status + " status");
@@ -119,7 +119,8 @@ public class ParkingSlotServiceImpl implements ParkingSlotService {
         ParkingSlot slot = getSlotById(id);
 
         if (slot.isActive()) {
-            throw new IllegalStateException("Parking slot is already active");
+            throw new IllegalStateException(
+                    "Parking slot is already active");
         }
 
         slot.setActive(true);
@@ -132,14 +133,14 @@ public class ParkingSlotServiceImpl implements ParkingSlotService {
 
         ParkingSlot slot = getSlotById(id);
 
-        // OCCUPIED means there is an active parking session
         if (slot.getStatus() == ParkingSlot.Status.OCCUPIED) {
             throw new IllegalStateException(
                     "Cannot deactivate slot while it has an active parking session");
         }
 
         if (!slot.isActive()) {
-            throw new IllegalStateException("Parking slot is already inactive");
+            throw new IllegalStateException(
+                    "Parking slot is already inactive");
         }
 
         slot.setActive(false);
