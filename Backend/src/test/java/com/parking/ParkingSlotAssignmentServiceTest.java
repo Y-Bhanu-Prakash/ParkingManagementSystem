@@ -4,27 +4,34 @@ import com.parking.entity.ParkingSession;
 import com.parking.entity.ParkingSlot;
 import com.parking.entity.VehicleType;
 import com.parking.repository.InMemoryDataStore;
+import com.parking.repository.ParkingPassRepository;
 import com.parking.repository.ParkingSessionRepository;
 import com.parking.repository.ParkingSlotRepository;
+import com.parking.service.ParkingPassService;
 import com.parking.service.ParkingSlotAssignmentService;
+import com.parking.service.VehicleEntryResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ParkingSlotAssignmentServiceTest {
 
     private InMemoryDataStore dataStore;
     private ParkingSlotRepository parkingSlotRepository;
     private ParkingSessionRepository parkingSessionRepository;
+    private ParkingPassRepository parkingPassRepository;
+    private ParkingPassService parkingPassService;
     private ParkingSlotAssignmentService assignmentService;
 
     @BeforeEach
     void setUp() {
-
         dataStore = new InMemoryDataStore();
 
         parkingSlotRepository =
@@ -33,16 +40,23 @@ public class ParkingSlotAssignmentServiceTest {
         parkingSessionRepository =
                 new ParkingSessionRepository(dataStore);
 
-        assignmentService =
-                new ParkingSlotAssignmentService(
-                        parkingSlotRepository,
-                        parkingSessionRepository
-                );
+        parkingPassRepository =
+                new ParkingPassRepository(dataStore);
+
+        parkingPassService = new ParkingPassService(
+                parkingPassRepository,
+                new BCryptPasswordEncoder()
+        );
+
+        assignmentService = new ParkingSlotAssignmentService(
+                parkingSlotRepository,
+                parkingSessionRepository,
+                parkingPassService
+        );
     }
 
     @Test
     void shouldAssignCompatibleAvailableSlot() {
-
         addSlot(
                 1L,
                 "C-001",
@@ -51,7 +65,7 @@ public class ParkingSlotAssignmentServiceTest {
                 true
         );
 
-        ParkingSession session =
+        VehicleEntryResponse response =
                 assignmentService.assignSlot(
                         "AP01AB1234",
                         VehicleType.CAR,
@@ -60,30 +74,23 @@ public class ParkingSlotAssignmentServiceTest {
                         60.0
                 );
 
-        assertEquals(
-                "AP01AB1234",
-                session.getVehicleNumber()
-        );
+        ParkingSession session = response.session();
 
-        assertEquals(
-                VehicleType.CAR,
-                session.getVehicleType()
-        );
+        assertEquals("AP01AB1234", session.getVehicleNumber());
+        assertEquals(VehicleType.CAR, session.getVehicleType());
+        assertEquals(1L, session.getSlotId());
+        assertEquals(ParkingSession.Status.ACTIVE, session.getStatus());
 
-        assertEquals(
-                1L,
-                session.getSlotId()
-        );
-
-        assertEquals(
-                ParkingSession.Status.ACTIVE,
-                session.getStatus()
-        );
+        assertFalse(response.passCode().isBlank());
+        assertTrue(response.password().matches("\\d{4}"));
+        assertEquals(session.getId(), parkingPassRepository
+                .findByPassCode(response.passCode())
+                .orElseThrow()
+                .getSessionId());
 
         assertEquals(
                 ParkingSlot.Status.OCCUPIED,
-                parkingSlotRepository
-                        .findById(1L)
+                parkingSlotRepository.findById(1L)
                         .orElseThrow()
                         .getStatus()
         );
@@ -91,7 +98,6 @@ public class ParkingSlotAssignmentServiceTest {
 
     @Test
     void shouldIgnoreOccupiedSlots() {
-
         addSlot(
                 1L,
                 "C-001",
@@ -114,7 +120,6 @@ public class ParkingSlotAssignmentServiceTest {
 
     @Test
     void shouldIgnoreIncompatibleSlots() {
-
         addSlot(
                 1L,
                 "B-001",
@@ -136,8 +141,7 @@ public class ParkingSlotAssignmentServiceTest {
 
         assertEquals(
                 ParkingSlot.Status.AVAILABLE,
-                parkingSlotRepository
-                        .findById(1L)
+                parkingSlotRepository.findById(1L)
                         .orElseThrow()
                         .getStatus()
         );
@@ -145,7 +149,6 @@ public class ParkingSlotAssignmentServiceTest {
 
     @Test
     void shouldIgnoreInactiveCompatibleSlots() {
-
         addSlot(
                 1L,
                 "C-001",
@@ -168,7 +171,6 @@ public class ParkingSlotAssignmentServiceTest {
 
     @Test
     void shouldNotChangeAnySlotWhenAssignmentFails() {
-
         addSlot(
                 1L,
                 "B-001",
@@ -198,31 +200,26 @@ public class ParkingSlotAssignmentServiceTest {
 
         assertEquals(
                 ParkingSlot.Status.AVAILABLE,
-                parkingSlotRepository
-                        .findById(1L)
+                parkingSlotRepository.findById(1L)
                         .orElseThrow()
                         .getStatus()
         );
 
         assertEquals(
                 ParkingSlot.Status.AVAILABLE,
-                parkingSlotRepository
-                        .findById(2L)
+                parkingSlotRepository.findById(2L)
                         .orElseThrow()
                         .getStatus()
         );
 
         assertEquals(
                 0,
-                parkingSessionRepository
-                        .findAll()
-                        .size()
+                parkingSessionRepository.findAll().size()
         );
     }
 
     @Test
     void shouldNotAssignSameSlotToSecondActiveVehicle() {
-
         addSlot(
                 1L,
                 "C-001",
@@ -231,7 +228,7 @@ public class ParkingSlotAssignmentServiceTest {
                 true
         );
 
-        ParkingSession firstSession =
+        VehicleEntryResponse firstResponse =
                 assignmentService.assignSlot(
                         "AP01AB1234",
                         VehicleType.CAR,
@@ -240,15 +237,13 @@ public class ParkingSlotAssignmentServiceTest {
                         60.0
                 );
 
-        assertEquals(
-                1L,
-                firstSession.getSlotId()
-        );
+        ParkingSession firstSession = firstResponse.session();
+
+        assertEquals(1L, firstSession.getSlotId());
 
         assertEquals(
                 ParkingSlot.Status.OCCUPIED,
-                parkingSlotRepository
-                        .findById(1L)
+                parkingSlotRepository.findById(1L)
                         .orElseThrow()
                         .getStatus()
         );
@@ -266,15 +261,12 @@ public class ParkingSlotAssignmentServiceTest {
 
         assertEquals(
                 1,
-                parkingSessionRepository
-                        .findActiveSessions()
-                        .size()
+                parkingSessionRepository.findActiveSessions().size()
         );
     }
 
     @Test
     void shouldRejectDuplicateActiveVehicle() {
-
         addSlot(
                 1L,
                 "C-001",
@@ -305,8 +297,7 @@ public class ParkingSlotAssignmentServiceTest {
 
         assertEquals(
                 ParkingSlot.Status.AVAILABLE,
-                parkingSlotRepository
-                        .findById(1L)
+                parkingSlotRepository.findById(1L)
                         .orElseThrow()
                         .getStatus()
         );
@@ -314,7 +305,6 @@ public class ParkingSlotAssignmentServiceTest {
 
     @Test
     void shouldRejectMissingVehicleNumber() {
-
         addSlot(
                 1L,
                 "C-001",
@@ -337,7 +327,6 @@ public class ParkingSlotAssignmentServiceTest {
 
     @Test
     void shouldRejectMissingVehicleType() {
-
         addSlot(
                 1L,
                 "C-001",
@@ -360,7 +349,6 @@ public class ParkingSlotAssignmentServiceTest {
 
     @Test
     void shouldRejectInvalidDuration() {
-
         addSlot(
                 1L,
                 "C-001",
@@ -382,8 +370,7 @@ public class ParkingSlotAssignmentServiceTest {
 
         assertEquals(
                 ParkingSlot.Status.AVAILABLE,
-                parkingSlotRepository
-                        .findById(1L)
+                parkingSlotRepository.findById(1L)
                         .orElseThrow()
                         .getStatus()
         );
@@ -391,7 +378,6 @@ public class ParkingSlotAssignmentServiceTest {
 
     @Test
     void shouldCreateActiveParkingSession() {
-
         addSlot(
                 1L,
                 "C-001",
@@ -400,7 +386,7 @@ public class ParkingSlotAssignmentServiceTest {
                 true
         );
 
-        ParkingSession session =
+        VehicleEntryResponse response =
                 assignmentService.assignSlot(
                         " ap 01 ab 1234 ",
                         VehicleType.CAR,
@@ -409,36 +395,20 @@ public class ParkingSlotAssignmentServiceTest {
                         60.0
                 );
 
-        assertEquals(
-                "AP01AB1234",
-                session.getVehicleNumber()
-        );
+        ParkingSession session = response.session();
 
-        assertEquals(
-                ParkingSession.Status.ACTIVE,
-                session.getStatus()
-        );
+        assertEquals("AP01AB1234", session.getVehicleNumber());
+        assertEquals(ParkingSession.Status.ACTIVE, session.getStatus());
+        assertEquals(120, session.getExpectedDurationMinutes());
+        assertEquals(60.0, session.getBaseCharge());
+        assertEquals(60.0, session.getTotalCharge());
 
-        assertEquals(
-                120,
-                session.getExpectedDurationMinutes()
-        );
-
-        assertEquals(
-                60.0,
-                session.getBaseCharge()
-        );
-
-        assertEquals(
-                60.0,
-                session.getTotalCharge()
-        );
+        assertFalse(response.passCode().isBlank());
+        assertTrue(response.password().matches("\\d{4}"));
 
         assertEquals(
                 1,
-                parkingSessionRepository
-                        .findActiveSessions()
-                        .size()
+                parkingSessionRepository.findActiveSessions().size()
         );
     }
 
@@ -449,7 +419,6 @@ public class ParkingSlotAssignmentServiceTest {
             ParkingSlot.Status status,
             boolean active
     ) {
-
         ParkingSlot slot = new ParkingSlot(
                 id,
                 slotCode,
@@ -468,9 +437,7 @@ public class ParkingSlotAssignmentServiceTest {
             VehicleType vehicleType,
             Long slotId
     ) {
-
-        LocalDateTime entryTime =
-                LocalDateTime.now();
+        LocalDateTime entryTime = LocalDateTime.now();
 
         return new ParkingSession(
                 id,
